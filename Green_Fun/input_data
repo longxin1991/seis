@@ -1,0 +1,5 @@
+300   #discretize time
+5000  #integral point number 
+8.0   #P wave spead
+4.62  #S wave speed
+3.30  #density
