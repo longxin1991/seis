@@ -20,15 +20,15 @@ fi
 for file in ${sacdir}/*.SAC
 do
 file=`basename $file`
+echo "normalize file $file"
 sac << EOF
+cut b 10 e -10
 r ${sacdir}/${file}
 setbb A &1,depmax
 setbb B &1,depmin
-setbb C (MAX (absolute %A) %B)
-echo on
+setbb C (MAX (absolute %B) %A)
 div %C
 w ${OUT}/${file}
-echo off
 q
 EOF
 

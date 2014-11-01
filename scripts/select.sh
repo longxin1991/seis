@@ -43,6 +43,9 @@ do
 
 sac <<EOF
 r $sacfile
+fileid l ul
+title "dist: &1,gcarc az: &1,az"
+qdp off
 ppk
 q
 EOF
@@ -60,6 +63,9 @@ EOF
 			then
 				echo "skip event $evtid"
 				break
+			elif [[ "$choice" =~ "" ]]
+			then
+				continue
 			else
 				echo "no option $choice"
 				exit 0;

@@ -77,11 +77,12 @@ slo=${staloc[1]}
 da=(`distaz $sla $slo $ela $elo`)
 baz=${da[1]}
 az=${da[2]}
-
+#计算理论到时
+theory=`taup_time -mod prem -deg $dis -ph PKiKP -h $edp |awk 'NF>9 {if(NR==6)print $4}'`
 sac <<EOF
 echo on
 r $rsacfile
-chnhdr GCARC $dis STLA $sla STLO $slo BAZ $baz AZ $az
+chnhdr GCARC $dis STLA $sla STLO $slo BAZ $baz AZ $az T1 $theory
 w $rsacfile
 quit
 EOF

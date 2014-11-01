@@ -35,10 +35,17 @@ i=0
 while [ $i -lt $evtnum ]
 do
 	i=$((i+1))
-	evtid=`awk -v n=$i 'NR==n {print $1}' ${evtlst}`
-
-	cd $evtid
-	echo "cd to event $evtid"
+	evtid=`awk -F "|" -v n=$i 'NR==n {print $1}' ${evtlst}`
+	dep=`awk -F "|" -v n=$i 'NR==n {print $5}' ${evtlst}`
+	evtid=`echo $evtid`
+	dep=`echo $dep`
+	if [ -d $evtid ]
+	then
+		cd $evtid
+		echo "cd to event $evtid"
+	else
+		continue
+	fi
 
 	norm.sh out $normdir
 
@@ -67,7 +74,7 @@ do
 		continue
 	else
 		output=${psdir}/${evtid}.ps
-		pltrace.sh $xyzdir $output
+		pltrace.sh $xyzdir  $output
 	fi
 	
 	gv $output &>/dev/null

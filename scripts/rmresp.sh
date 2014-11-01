@@ -17,6 +17,10 @@ N=`seq ${#EVENTS[@]}`
 
 for i in $N;do
 i=$(($i-1))
+
+if [ -d ${EVENTS[$i]} ]
+then
+
 echo "Processing Event ${EVENTS[$i]} \n"
 SACDIR=${RTDIR}/${EVENTS[$i]}/sac
 
@@ -33,16 +37,17 @@ SACFILE=`ls sac/`
 for file in $SACFILE ;do
 sac << EOF
 echo on
+cut 400 1100
 r ./sac/${file}
 taper
 rtr
 rmean
 trans from evalresp to none freq $FREQ
-trans to WWSP
 w ${OUTDIR}/${file}
 q
 EOF
 done
 #cp ${OUTDIR}/${file} $RTDIR
 cd $RTDIR
+fi
 done
