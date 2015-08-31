@@ -1,4 +1,5 @@
-#define MAXLEN 100000
+#define MAXLEN 50000
+#define VERBOSE 1
 
 typedef struct raydata
 {
@@ -10,12 +11,23 @@ typedef struct raydata
 	char phase;
 }RayData;
 
+
+/*Data type for constant horizontal layer model*/
 typedef struct model{
 	float *Vp;
 	float *Vs;
 	float *h;
 	int n;
 }Model;
+
+/*Data type for linear horiziontal layer model*/
+typedef struct model_l{
+	float *Vp;
+	float *Vs;
+	float *z;
+	int n;
+}Model_L;
+
 
 struct raycor{
 	float rx;

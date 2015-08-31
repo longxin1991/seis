@@ -3,7 +3,7 @@ ifndef CC
 endif
 
 LIB := -lm
-OBJ := numc.o tracing.o mod.o mem.o struct.o
+OBJ := numc.o tracing.o mod.o mem.o struct.o velocity.o
 
 all:ray_1d
 

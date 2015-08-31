@@ -1,9 +1,11 @@
 #include "mem.h"
 #include "struct.h"
 #include "numc.h"
+#include "velocity.h"
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+
 
 float *phase_parse(const char phase,Model *mod)
 {
@@ -24,14 +26,163 @@ float *phase_parse(const char phase,Model *mod)
 
 int point_layer(float *h,int ln,float z0)
 {
-    int i=0,dep=0;
+    int i=0;
+    float dep=0;
     for(i=0;i<ln;i++)
     {
         dep += h[i];
         if (z0<=dep)
+        {   
             break;
+        }
     }
     return i;
+}
+
+void depth_to_thickness(float *depth,float *d,int ln)
+{
+    int i;
+    for (i=0;i<ln;i++)
+        {
+            d[i] = depth[i+1] - depth[i];
+        }
+}
+
+void ray_tracing_ml(struct raycor R,Model *mod, RayData *Data)
+{
+
+    int k=0,i=0,turn=0,n,ln,sn,bn;
+    float dt=0.1;
+    float p,K1,K2,*x,*z,z_ref,ph;
+    float *h,*v,i0,*d,z1,v1,x1,v0,t;
+
+    x = (float *)malloc(MAXLEN*sizeof(float));
+    z = (float *)malloc(MAXLEN*sizeof(float));
+
+    Data->x = x;
+    Data->z = z;
+    h = mod->h;
+    n = mod->n;
+    ln = n - 1;
+
+    /* Array of layer thickness*/
+    d = (float *)malloc((n-1)*sizeof(float));
+
+    depth_to_thickness(h,d,ln);
+
+    v = phase_parse(Data->phase,mod);
+
+    x[0] = R.rx;
+    z[0] = R.rz;
+    i0 = R.ri;
+
+    sn = point_layer(d,ln,z[0]);
+    v0 = vl(v[sn],v[sn+1],h[sn],h[sn+1],z[0]);
+    //printf("%.2f\n", v0);
+    //exit(0);
+    p = sin(i0)/v0;
+    
+
+    /*Tracing the downgoing part of the ray*/
+    for (i=sn;i<ln;i++)
+    {
+        if(d[i]<0.01)
+            continue;
+		if(p*p*v0*v0>=0.999999)
+		{
+			bn=i-1;
+			break;
+		}
+
+        while(k < MAXLEN)
+        {
+            //printf("%d\n", k);
+            if (z[k]>=h[ln] && turn ==0)
+            {
+                z[k] = h[ln];
+                turn = 1;
+                //k += 1;
+				bn=ln-1;
+                break;
+            }
+
+            if (z[k]>=h[i+1])
+            {
+                z[k] = h[i+1];
+                //k += 1;
+                break;
+            }
+            //printf("%.2f %.2f %.2f %.6f %d\n",x[k],z[k],v0,p*p*v0*v0,i);
+			/*Decide whether the critical angle is surpassed*/
+			if (p*p*v0*v0>0.999999)
+				break;
+			else
+			{
+				v0 = vl(v[i],v[i+1],h[i],h[i+1],z[k]);
+				K1 = v0*sqrt(1-p*p*v0*v0);
+			}
+            z1 = 0.5*dt*K1 + z[k];
+            v1 = vl(v[i],v[i+1],h[i],h[i+1],z1);
+            K2 = v1*sqrt(1-p*p*v1*v1);
+            z[k+1] = z[k] + dt*K2;
+
+            K2 = v1*v1*p;
+            x[k+1] = x[k] + dt*K2;
+
+            k += 1;
+
+        }
+
+
+    }
+
+    /*Tracing the upgoing part of the ray*/
+    for (i=bn;i>=0;i--)
+    {
+        if(d[i]<0.01)
+            continue;
+
+        while(k<MAXLEN)
+        {
+            if(z[k]<=h[i] && i>=1)
+            {
+                z[k] = h[i];
+                //k += 1;
+                //printf("%s %.2f %.2f\n","next", z[k],d[i]);
+                break;
+            }
+
+            if(z[k]<=0)
+                break;
+            //printf("%.2f %.2f %.2f %.4f d\n",x[k],z[k],p*p*v0*v0,K1);
+            v0 = vl(v[i],v[i+1],h[i],h[i+1],z[k]);
+
+            /*encounter water, S wave velocity equals zero.*/
+            if (v0<0.001)
+                break;
+
+			if (p*p*v0*v0<1.0)
+				K1 = -1*v0*sqrt(1-p*p*v0*v0);
+			else
+				K1 = -K1;
+            z1 = 0.5*dt*K1 + z[k];
+            v1 = vl(v[i],v[i+1],h[i],h[i+1],z1);
+            K2 = -1*v1*sqrt(1-p*p*v1*v1);
+            z[k+1] = z[k] + dt*K2;
+
+            K2 = v1*v1*p;
+            x[k+1] = x[k] + dt*K2;
+
+            k += 1;            
+        }
+
+    }
+
+    Data->dis = x[k-1];
+    t = dt*k;
+    Data->np =k;
+    Data->t = t;
+	//printf("%.2f\n",x[k-1]);
 }
 
 void ray_tracing_m(struct raycor R,Model *mod, RayData *Data){
@@ -171,7 +322,7 @@ void ray_tracing_m(struct raycor R,Model *mod, RayData *Data){
                break;
            }
            
-           if ( k >100 && z[k]< 0)
+           if (z[k]< 0)
            {
                    break;
            }
@@ -185,7 +336,7 @@ void ray_tracing_m(struct raycor R,Model *mod, RayData *Data){
     t = dt*k;
     Data->np = k;
     Data->t = t;
-    //printf("%d %.3f\n",k,cdep);
+    //printf("%.3f\n",x[k-1]);
     /*-------------------------------------*/
 }
 
@@ -199,26 +350,37 @@ RayData *ray_shoot(struct raycor R1,struct raycor R2,Model *mod,float dis,char p
     Data = (RayData *)malloc(1*sizeof(RayData));
     Data->phase = phase;
     /*bisection method*/
-    ray_tracing_m(R1,mod,Data);
+    ray_tracing_ml(R1,mod,Data);
     free_path(Data); 
     d1 = Data->dis;
+
+	if (d1>=dis)
+	{
+		printf("Object distace larger than that of minmum initial incident angle!\n");
+		printf("Abort\n");
+		exit(0);
+	}
     i1 = R1.ri;
-    ray_tracing_m(R2,mod,Data);
+    //exit(0);
+    ray_tracing_ml(R2,mod,Data);
     free_path(Data); 
     d2 = Data->dis;
     i2 = R2.ri;
+    //exit(0);
     z0 = R2.rz;
     x0 = R2.rx;
     R0.rx = x0;
     R0.rz = z0;
-    while(fabs(d0 - dis)>=0.15)
+    while(fabs(d0 - dis)>=0.1)
     {
         i0 =(i1+i2)/2;
         R0.ri = i0;
-        ray_tracing_m(R0,mod,Data);
+        ray_tracing_ml(R0,mod,Data);
         d0 = Data->dis;
+
+        //printf("%.3f\n",d0);
         
-        if (fabs(d0-dis)>=0.15)
+        if (fabs(d0-dis)>=0.1)
             free_path(Data);
         if (d0>dis){
             i2 = i0;
@@ -227,18 +389,21 @@ RayData *ray_shoot(struct raycor R1,struct raycor R2,Model *mod,float dis,char p
             i1 = i0;
         }
         i=i+1;
-        if (i>1000)
+        if (i>100)
         {
             printf("Shooting Fail! Target may not be reached.\n");
             exit(0);
         }
     }
     /* ---------------- */
-    printf("------\n");
-    printf("Result\n");
-    printf("---------------------------------\n");
-    printf("Steps |Date Points|Time |Distance\n");
-    printf("---------------------------------\n");
+    if (VERBOSE == 1)
+    {
+        printf("------\n");
+        printf("Result\n");
+        printf("---------------------------------\n");
+        printf("Steps |Date Points|Time |Distance\n");
+        printf("---------------------------------\n");
+    }
     printf("%d\t%d\t%.2f\t%.3f\n",i,Data->np,Data->t,Data->dis);
     return Data;
 }

@@ -13,16 +13,19 @@ void read_mod(char *model_file,Model *mod)
         printf("Fail to read model file!\n");
         exit(0);
     }
-
+    
     fgets(buff,19,fp);/*skip the file header*/
-	
-    printf("---------------------\n");
-    printf("Read model parameter.\n");
-    printf("---------------------\n");
-    printf("%s",buff);
+	if (VERBOSE == 1)
+    {
+        printf("---------------------\n");
+        printf("Read model parameter.\n");
+        printf("---------------------\n");
+        printf("%s",buff);
+    }
     while((fscanf(fp,"%f\t%f\t%f",&(mod->Vp[i]),&(mod->Vs[i]),&(mod->h[i]))) != EOF)
     {
-        printf("%.1f\t%.1f\t%.1f\n",mod->Vp[i],mod->Vs[i],mod->h[i]);
+        if (VERBOSE == 1)
+            printf("%.1f\t%.1f\t%.1f\n",mod->Vp[i],mod->Vs[i],mod->h[i]);
         i += 1;
     }
 
