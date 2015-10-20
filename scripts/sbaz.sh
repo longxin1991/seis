@@ -1,17 +1,18 @@
 #!/bin/bash
 
-if [ $# -ne 4 ]
+if [ $# -ne 5 ]
 then
-	echo "usage:sbaz csla cslo dmax dmin"
+	echo "usage:sbaz csla cslo dmin dmax evtfile"
 	exit 0
 fi
 sla=$1
 slo=$2
 dmax=$4
 dmin=$3
-efile=eorg.txt
+efile=$5
 
-n=`awk 'END{print NR}' $efile`
+#n=`awk 'END{print NR}' $efile`
+n=`cat $efile|wc -l`
 i=0
 while [ $i -lt $n ]
 do

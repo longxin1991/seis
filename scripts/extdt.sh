@@ -5,16 +5,24 @@
 #2014.8.27
 
 EVENTFILE=$1
-DATADIR=~/data
+DATADIR=`pwd`
+metadir=${DATADIR}/meta
 
 if [ $# -ne 1 ]
 then
 	echo "usage:extdt.sh eventfile."
 	exit 0
 fi
-para=`cat $EVENTFILE |awk '{print $1}'`
 
-cd $DATADIR
+if [ -f $EVTNTFILE ]
+then
+	para=`cat $EVENTFILE |awk '{print $1}'`
+else
+	para=$EVENTFILE
+fi
+
+
+cd "$DATADIR"
 
 #Select event directory.
 # if [  -n "$1" ]
@@ -45,15 +53,22 @@ emi=${etime[1]}
 es=${etime[2]}
 etf="${ey}-${emo}-${ed} ${eh}:${emi}:${es}"
 
-SACDIR=~/data/$ID/sac
-EVENTDIR=~/data/$ID
-if [ ! -d ${SACDIR} ]
+SACDIR="${DATADIR}/$ID/sac"
+EVENTDIR="${DATADIR}/$ID"
+if [ ! -d "${SACDIR}" ]
 then
-	mkdir ${SACDIR}
+	mkdir "${SACDIR}"
 fi
 
-cd $EVENTDIR
+cd "$EVENTDIR"
 stalist=sta.txt
+
+fn=`ls *.mseed|wc -l`
+if [ $fn -eq 0 ]
+then
+	echo "No mseed file for event $EVENTDIR, skip"
+	continue
+fi
 
 for rawfile in *
 do
@@ -62,7 +77,8 @@ do
 		filepre=${rawfile%.mseed}
 		staname=${rawfile%_*}
 		dis=${filepre#*_}
-		mseed2sac $rawfile  -m "${filepre}.metadata"
+		mseed2sac $rawfile  -m "${metadir}/${staname}.meta"
+		#mseed2sac $rawfile  -m "${staname}_${dis}.metadata"
 		echo "Extracting file $rawfile."
 
 #write GCARC and station info to SAC files.
@@ -78,11 +94,18 @@ da=(`distaz $sla $slo $ela $elo`)
 baz=${da[1]}
 az=${da[2]}
 #计算理论到时
-theory=`taup_time -mod prem -deg $dis -ph PKiKP -h $edp |awk 'NF>9 {if(NR==6)print $4}'`
+#temp=(`taup_time -mod prem -deg $dis -ph PKiKP,PKIIKP -h $edp |awk 'NF>9{if(NR>=6)print $4}'`)
+#t2=${temp[0]}
+#t5=${temp[1]}
+t1=`taup_time -mod prem -deg $dis -ph PcP -h $edp |awk 'NF>9 {if(NR==6)print $4}'`
+t2=`taup_time -mod prem -deg $dis -ph PKiKP -h $edp |awk 'NF>9 {if(NR==6)print $4}'`
+#d=`echo "scale=3;180-$dis/2"|bc`
+#t4=`taup_time -mod prem -deg $d -ph PKIKP -h $edp |awk 'NF>9 {if(NR==6)print $4}'`
+#t4=`echo "$t4 * 2"|bc`
 sac <<EOF
 echo on
 r $rsacfile
-chnhdr GCARC $dis STLA $sla STLO $slo BAZ $baz AZ $az T1 $theory
+chnhdr GCARC $dis STLA $sla STLO $slo BAZ $baz AZ $az T1 $t1 T2 $t2
 w $rsacfile
 quit
 EOF
@@ -91,12 +114,12 @@ done
 fi
 done
 
-mv *.SAC ${SACDIR}/
+mv *.SAC "${SACDIR}"/
 echo "Moving extracted file to SACDIR"
 
-cd ${SACDIR}
+cd "${SACDIR}"
 #Write Event info to SAC files.
-for sacfile in $SACDIR/*
+for sacfile in ${SACDIR}/*
 do
 echo $sacfile
 fsplit=(${sacfile//./ })
@@ -116,7 +139,7 @@ quit
 EOF
 done
 
-cd $DATADIR
+cd "$DATADIR"
 fi
 
 done

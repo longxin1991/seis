@@ -8,16 +8,16 @@ import os
 import datetime
 import time
 
-EVDIR='/home/longxin/data'
-EVENTFILE='event_ci.txt'
+EVDIR='/home/longxin/data/IMS/exotic/WRA'
+EVENTFILE=EVDIR+'/evtlst.txt'
 os.chdir(EVDIR)
-loc='01'
+loc='00'
 argc=len(sys.argv)
 """
 Set time window range
 """
 pre=0
-delay=1100
+delay=3600
 ISOTIMEFORMAT="%Y-%m-%dT%X"
 
 if argc<5:
@@ -108,7 +108,7 @@ for ev in events:
 	for item in lines:
 		item=item.strip()
 		item=item.split(' ')
-		cmd='FetchData -N '+item[0]+' -S '+item[1]+' -C '+ch+' -s '+S+' -e '+E+' -o '+item[1]+'_'+item[4]+'.mseed'+' -m '+item[1]+'_'+item[4]+'.metadata'+' -rd .'
+		cmd='FetchData -N '+item[0]+' -S '+item[1]+' -C '+ch+' -s '+S+' -e '+E+' -o '+item[1]+'_'+item[4]+'.mseed'
 		print cmd
 		os.system(cmd)
 	

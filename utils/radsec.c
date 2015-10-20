@@ -10,7 +10,7 @@ int main (int argc, char *argv[]) {
 	float az,theta;
 
     if (argc != 8 && argc != 5) {
-        fprintf(stderr, "Usage: %s mrr mtt mff mrt mrf mtf\n", argv[0]);
+        fprintf(stderr, "Usage: %s mrr mtt mff mrt mrf mtf az\n", argv[0]);
         fprintf(stderr, "   Or: %s strike dip rake\n", argv[0]);
         exit(1);
     }
