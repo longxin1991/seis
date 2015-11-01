@@ -48,6 +48,11 @@ void depth_to_thickness(float *depth,float *d,int ln)
         }
 }
 
+void ray_tracing_sp(struct raycor_sphere R,Model *mod,RayDataSP *Data)
+{
+	;
+}
+
 void ray_tracing_ml(struct raycor R,Model *mod, RayData *Data)
 {
 
@@ -406,59 +411,4 @@ RayData *ray_shoot(struct raycor R1,struct raycor R2,Model *mod,float dis,char p
     }
     printf("%d\t%d\t%.2f\t%.3f\n",i,Data->np,Data->t,Data->dis);
     return Data;
-}
-
-void ray_tracing(float i0,float x0,float z0,float v, RayData *Data){
-
-    int k=0,i=0,turn=0;
-    float dt = 0.1,t;
-    float p,K1,K2,*x,*z,h_cmb=100;
-
-    x = (float *)malloc(MAXLEN*sizeof(float));
-    z = (float *)malloc(MAXLEN*sizeof(float));
-
-    Data->x = x;
-    Data->z = z;
-
-    p = sin(i0)/v;
-    while (k<MAXLEN)
-    {
-        if (k==0)
-        {
-            K1 = v*p;
-            K2 = v*p;
-            x[1] = x0 + dt*K2;
-
-            K2 = v*sqrt(1-p*p*v*v);
-            z[1] = z0 + dt*K2;
-            k = k+1;
-            continue;
-        }
-        
-        
-        K1 = v*p;
-        K2 = v*p;
-        x[k] = x[k-1] + dt*K2;
-
-        K2 = v*sqrt(1-p*p*v*v);
-       
-        if (z[k-1]>=h_cmb && turn ==0)
-        {
-            z[k-1]=h_cmb;
-            turn=1;
-        }
-
-        if (turn==1)
-            K2=-1*K2;
-        z[k] = z[k-1] + dt*K2;
-
-        if ( k >100 && z[k]< 0.01)
-            break;
-        
-        Data->dis = x[k];
-        k = k + 1;
-        t = dt*k;
-        Data->np = k;
-        Data->t = t;
-    }
 }

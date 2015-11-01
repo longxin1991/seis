@@ -24,11 +24,11 @@ int main(int argc,char *argv[])
 
 /* parse parameter*/
     if (argc < 12 ){
-        fprintf(stderr, "Usage: %s output -x xloc -z zloc -d dis [-m] model_file [-p] phase\n",argv[0]);
+        fprintf(stderr, "Usage: %s -x xloc -z zloc -d dis [-m] model_file [-p] phase [output]\n",argv[0]);
         exit(EXIT_FAILURE);
     }
     //output = argv[1];
-    while((opt=getopt(argc,argv,"h:x:z:m:p:d:"))!=-1)
+    while((opt=getopt(argc,argv,"x:z:m:p:d:"))!=-1)
     {
         switch(opt){
             case 'm':
