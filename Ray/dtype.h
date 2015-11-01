@@ -11,6 +11,15 @@ typedef struct raydata
 	char phase;
 }RayData;
 
+typedef struct raydata_sphere
+{
+	float *r;
+	float *phi;
+	float t;
+	float dis;
+	int np;
+	char phase;
+}RayDataSP;
 
 /*Data type for constant horizontal layer model*/
 typedef struct model{
@@ -33,4 +42,10 @@ struct raycor{
 	float rx;
 	float rz;
 	float ri;
+};
+
+struct raycor_sphere{
+	float r;
+	float phi;
+	float theta;
 };
