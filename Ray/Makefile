@@ -10,6 +10,9 @@ all:ray_1d
 ray_1d:%:%.o $(OBJ)
 	$(CC) $^ $(LIB) -o $@
 
+test:%:%.o $(OBJ)
+	$(CC) $^ $(LIB) -o $@
+
 %o.:%.c
 
 clean:

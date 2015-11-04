@@ -1,5 +1,6 @@
-#define MAXLEN 50000
-#define VERBOSE 1
+#define MAXLEN 400000
+#define VERBOSE 0
+#define Re 6371.0
 
 typedef struct raydata
 {
@@ -8,7 +9,7 @@ typedef struct raydata
 	float t;
 	float dis;
 	int np;
-	char phase;
+	char *phase;
 }RayData;
 
 typedef struct raydata_sphere
@@ -16,9 +17,9 @@ typedef struct raydata_sphere
 	float *r;
 	float *phi;
 	float t;
-	float dis;
+	float delta;
 	int np;
-	char phase;
+	char *phase;
 }RayDataSP;
 
 /*Data type for constant horizontal layer model*/

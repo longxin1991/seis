@@ -1,5 +1,5 @@
 #define PI 3.14159265357
 
-void linspace(double begin,double end,int n,double p[]);
-int hv(double x);
-void der(double y[],int n,double dt);
+void linspace(float begin,float end,int n,float p[]);
+int hv(float x);
+void der(float y[],int n,float dt);

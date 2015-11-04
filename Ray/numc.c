@@ -1,4 +1,4 @@
-void linspace(double begin,double end,int n,double p[])
+void linspace(float begin,float end,int n,float p[])
 {
 	int i;
 	p[0]=begin;
@@ -7,7 +7,7 @@ void linspace(double begin,double end,int n,double p[])
 	p[i]=end;
 }
 
-int hv(double x){
+int hv(float x){
 
     if(x>=0)
         return 1;
@@ -15,7 +15,7 @@ int hv(double x){
         return 0;
 }
 
-void der(double y[],int n,double dt)
+void der(float y[],int n,float dt)
 {
     int i;
     for(i=0;i<n-1;i++)
