@@ -24,10 +24,14 @@ int main(int argc,char *argv[])
 	double *ntau,*dummy,**atsta,**aamp,**aadf,**aaab,**atau,**atdf,**atab,*tstastd;
 	double t1,t2,*ampstd,*adfstd,*aabstd,*taustd,*tdfstd,*tabstd;
 	FILE **ofp,*rfp,*sfp,*efp;
+
+	tbs = -20;
+	nadf = 3; naab = 3; tsmax = 2;
+	stime = -2.0; rtime = 6.0;
 	
-	if (argc < 4 || argc >5)
+	if (argc < 4 || argc > 7)
 	{
-		printf("usage:%s nloop nrun nret [input]\n",argv[0]);
+		printf("usage:%s nloop nrun nret [input] [stime] [rtime]\n",argv[0]);
 		exit(0);
 	}
 	else if (argc >=4 )
@@ -35,18 +39,21 @@ int main(int argc,char *argv[])
 		nloop = (int)(atof(argv[1]));
 		nrun = (int)(atof(argv[2]));
 		nret = (int)(atof(argv[3]));
-		if (argc == 5)
+		if (argc >= 5)
 		{
 			memset(inf,0,20);
 			memcpy(inf,argv[4],strlen(argv[4]));
+		}
+		if (argc == 7)
+		{
+			stime = atof(argv[5]);
+			rtime = atof(argv[6]);
 		}
 	}
 
 	dt = read_para(inf);
 	nsta = dt.n;
-	tbs = -20;
-	nadf = 3; naab = 3; tsmax = 2;
-	stime = -2.0; rtime = 6.0;
+
 	/*Prepare data and allocate memory for each variable*/
 	st = (SacTrace *)malloc(nsta*sizeof(SacTrace));
 	data = (double **)malloc(nsta*sizeof(double *));
@@ -509,7 +516,8 @@ int main(int argc,char *argv[])
 						e2 += fabs(data[l][m]-qq[l][m]);
 					}
 				}
-				fprintf(efp,"%d %f\n",j,e2/e1);
+				if (k==nret-1)
+					fprintf(efp,"%d %f\n",j,e2/e1);
 			}
 		}
 		/*--------------------------- End Temperature Loop ----------------------*/
