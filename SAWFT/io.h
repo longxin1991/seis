@@ -4,6 +4,9 @@
 #include <ctype.h>
 #include "sac.h"
 
+#define MAXFNLEN 100
+
+
 typedef struct sta_para
 {
 	char **fname;

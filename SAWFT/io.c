@@ -1,5 +1,5 @@
 #include "io.h"
-#
+
 
 PARA read_para(const char *inf)
 {
@@ -26,7 +26,7 @@ PARA read_para(const char *inf)
 
 	for (i=0;i<n;i++)
 	{
-		fname[i] = (char *)malloc(10*sizeof(char));
+		fname[i] = (char *)malloc(MAXFNLEN*sizeof(char));
 		fscanf(fp,"%s %f %f %f %f",fname[i],&a,&b,&c,&d);
 		dis[i] = a; t_df[i] = b; t_bc[i] = c; t_ab[i] = d;
 	}
