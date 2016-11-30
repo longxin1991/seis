@@ -546,8 +546,8 @@ int main(int argc,char *argv[])
 	if ((rfp=fopen("result.txt","w+"))==NULL)
 		printf("Fail to write result to file %s","result.txt");
 	for (i=0;i<nsta;i++)
-		fprintf(rfp,"%8.3f %.3f %.3f %.3f %5.3f %5.3f\n",\
-				dt.dis[i],tdf[i],tau[i],tab[i],tsta[i],tstastd[i]);
+		fprintf(rfp,"%8.3f %.3f %.3f %.3f %5.3f %5.3f %5.3f %5.3f\n",\
+				dt.dis[i],tdf[i],tau[i],tab[i],tsta[i],tstastd[i],adf[i],adfstd[i]);
 	if ((sfp=fopen("refwave.txt","w+"))==NULL)
 		printf("Fail to write result to file %s","refwave.txt");
 	for (i=0;i<npts;i++)
