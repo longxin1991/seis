@@ -21,11 +21,6 @@ rtf.o:rtf.c
 amp_corr: ${COBJ} ${FOBJ}
 	${CC} $^ ${STATIC_LIB} ${LIBS} -I ${INCLUDE}  -o $@ 
 	
-test:test.o ${FOBJ} 
-	${FC} $^ ${CFLAGS} -o $@
-test.o:test.c
-	${CC} -c $^
-
 %o.:%.f
 	${FC} -c 
 

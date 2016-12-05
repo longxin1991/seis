@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int phase_id(char const *phase,char (*phcd)[8],int pn);
+
 int main(int argc,char *argv[])
 {
 	Model mod;
 	CMT mt;
-	char *funcname = "geo_spread";
-	int i,j,stat,n,sp,nd=100;
+	char *phase1,*phase2;
+	int i,j,stat,n,sp,nd=100,id1,id2;
 	float svp,svs,rvp,rvs,gs,rt,rp,evdp=588,az=310,*dis,cc;
 	/* define variable for ttime calculation */
 	int max = 60,strl,pn=2;
@@ -18,6 +20,19 @@ int main(int argc,char *argv[])
 	float depth,delta;
 	float tt[max],dtdd[max],dtdh[max],dddp[max];
 
+	if (argc < 3)
+	{
+		printf("usage:%s phase1 phase2 < stdin\n\n",argv[0]);
+		printf("phase1: PKPdf\n");
+		printf("phase2: PKPbc or PKPab\n");
+		printf(" stdin: evdp mrr mtt mff mrt mrf mtf\n");
+		exit(0);
+	}
+	else
+	{
+		phase1 = argv[1];
+		phase2 = argv[2];
+	}
 
 	dis = (float *)malloc(nd*sizeof(float));
 
@@ -53,16 +68,27 @@ int main(int argc,char *argv[])
 		delta = dis[i];
 		pn  = 2;	
 		getttimes_(phlst,&depth,&delta,&pn,tt,dtdd,dtdh,dddp,phcd,max,max,max,max,max,max);
-		/*
+		
 		for (j=0;j<pn;j++)
 		{
 			f2cstr(phcd[j],8);
-			printf("ttime->%f rp->%f  dt2->%f  phase->%s\n",tt[j],dtdd[j],dddp[j],phcd[j]);
+			//printf("ttime->%f rp->%f  dt2->%f  phase->%s\n",tt[j],dtdd[j],dddp[j],phcd[j]);
 		}
-		*/
-		gs = corr_gs(evdp,svp,rvp,dtdd[0],dtdd[1],dddp[0],dddp[1]);
-		rt = corr_rt(mod,dtdd[0],dtdd[1]);
-		rp = corr_rp(mt,evdp,svp,dtdd[0],dtdd[1],az);
+		id1 = phase_id(phase1,phcd,pn);	
+		id2 = phase_id(phase2,phcd,pn);
+
+		if (id1 == -1 || id2 == -1 )
+		{
+			if (id1 == -1)
+				printf("No %s arrive at %.3f\n",phase1,dis[i]);
+			if (id2 == -1)
+				printf("No %s arrive at %.3f\n",phase2,dis[i]);
+			exit(0);
+		}
+
+		gs = corr_gs(evdp,svp,rvp,dtdd[id1],dtdd[id2],dddp[id1],dddp[id2]);
+		rt = corr_rt(mod,dtdd[id1],dtdd[id2]);
+		rp = corr_rp(mt,evdp,svp,dtdd[id1],dtdd[id2],az);
 		cc = gs*rt*rp;
 		printf("%.3f %f %f %f %f\n",dis[i],gs,rt,rp,cc);
 	}
@@ -80,4 +106,20 @@ void read_mt(CMT *m,float *evdp)
 	m->mrt = mrt;
 	m->mrf = mrf;
 	m->mtf = mtf;
+}
+
+int phase_id(char const *phase,char (*phcd)[8],int pn)
+{
+	int i,slen,stat=-1;
+	
+	for (i=0;(i<pn && stat!=0);i++)
+	{
+		slen = strlen(phcd[i]);
+		stat = strcmp(phase,phcd[i]);
+	}
+	//printf("%s->%d\n",phase,i-1);
+	if (stat == 0)
+		return i-1;
+	else
+		return stat;
 }
