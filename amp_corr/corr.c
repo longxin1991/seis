@@ -117,7 +117,7 @@ float cal_radp(CMT mt,float theta,float az)
 
 	p[0] = sinf(theta)*cosf(az);
 	p[1] = sinf(theta)*sinf(az);
-	p[3] = cosf(theta);
+	p[2] = cosf(theta);
 
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)
@@ -136,6 +136,5 @@ float corr_rp(CMT mt,float evdp,float v_s,float p1,float p2,float az)
 
 	a1 = cal_radp(mt,i1,az);
 	a2 = cal_radp(mt,i2,az);
-
 	return a1/a2;
 }

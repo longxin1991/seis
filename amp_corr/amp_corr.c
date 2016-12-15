@@ -17,12 +17,13 @@ int main(int argc,char *argv[])
 	/* define variable for ttime calculation */
 	int max = 60,strl,pn=2;
 	char phlst[max][8],phcd[max][8];
-	float depth,delta;
+	float depth,delta,deg;
 	float tt[max],dtdd[max],dtdh[max],dddp[max];
 
-	if (argc < 3)
+	if (argc < 4)
 	{
 		printf("usage:%s phase1 phase2 < stdin\n\n",argv[0]);
+		printf("deg: Epicentral distance\n");
 		printf("phase1: PKPdf\n");
 		printf("phase2: PKPbc or PKPab\n");
 		printf(" stdin: evdp mrr mtt mff mrt mrf mtf\n");
@@ -30,8 +31,9 @@ int main(int argc,char *argv[])
 	}
 	else
 	{
-		phase1 = argv[1];
-		phase2 = argv[2];
+		deg = atof(argv[1]);
+		phase1 = argv[2];
+		phase2 = argv[3];
 	}
 
 	dis = (float *)malloc(nd*sizeof(float));
@@ -62,10 +64,10 @@ int main(int argc,char *argv[])
 		c2fstr(phlst[i],8);
 	}
 
-	for (i=0;i<nd;i++)
-	{
+	//for (i=0;i<nd;i++)
+	//{
 		depth = evdp;
-		delta = dis[i];
+		delta = deg;
 		pn  = 2;	
 		getttimes_(phlst,&depth,&delta,&pn,tt,dtdd,dtdh,dddp,phcd,max,max,max,max,max,max);
 		
@@ -80,9 +82,9 @@ int main(int argc,char *argv[])
 		if (id1 == -1 || id2 == -1 )
 		{
 			if (id1 == -1)
-				printf("No %s arrive at %.3f\n",phase1,dis[i]);
+				printf("No %s arrive at %.3f\n",phase1,deg);
 			if (id2 == -1)
-				printf("No %s arrive at %.3f\n",phase2,dis[i]);
+				printf("No %s arrive at %.3f\n",phase2,deg);
 			exit(0);
 		}
 
@@ -90,8 +92,8 @@ int main(int argc,char *argv[])
 		rt = corr_rt(mod,dtdd[id1],dtdd[id2]);
 		rp = corr_rp(mt,evdp,svp,dtdd[id1],dtdd[id2],az);
 		cc = gs*rt*rp;
-		printf("%.3f %f %f %f %f\n",dis[i],gs,rt,rp,cc);
-	}
+		printf("%.3f %f %f %f %f\n",deg,gs,rt,rp,cc);
+	//}
 	return 0;
 }
 
