@@ -38,15 +38,47 @@ void expspace(double max,double min,int n,double p[])
 	}
 }
 
-void normalize(double *data,int n)
+void slice(double *data,int b,int e,double *subdata)
+{
+    int i,n;
+    
+    n = e - b;
+    
+    for (i=0;i<n;i++)
+    {
+        subdata[i] = data[b+i];
+    }
+}
+
+double max_abs(double *data,int n)
+{
+    int i;
+    double mx,tmp;
+    mx = 0;
+    for (i=0;i<n;i++)
+    {   
+        tmp = fabs(data[i]);
+        if(tmp > mx)
+            mx = tmp;
+    }
+    return mx;
+}
+
+void normalize(double *data,int n,double factor)
 {
 	int i;
-	double max=0;
+	double mx,nf;
+
+    if (factor < 0)
+    {
+        mx = max_abs(data,n);
+        nf = mx;
+    }
+    else if (factor > 0 )
+        nf = factor;
+    else
+        nf = 1;
+    
 	for (i=0;i<n;i++)
-	{
-		if(fabs(data[i])>max)
-			max = fabs(data[i]);
-	}
-	for (i=0;i<n;i++)
-		data[i] = data[i]/max;
+		data[i] = data[i]/nf;
 }

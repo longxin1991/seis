@@ -68,7 +68,7 @@ SacTrace read_sac_tr(const char *sacfile)
 
 void cut_data(SacTrace tr,const char pick,double t_pre,int npts,double *data)
 {
-	int i,p_index,b,e,max_index;
+	int i,p_index,b,e,max_index,range;
 	double t0,tp,delta;
 	
 	switch (pick){
@@ -91,9 +91,10 @@ void cut_data(SacTrace tr,const char pick,double t_pre,int npts,double *data)
 	t0 = tr.hd.b;
 	delta = tr.hd.delta;
 	p_index = (int)((tp - t0)/delta) + 1;
+    range = (int)(0.25/delta);
 
-	max_index = get_max_index(tr.data,p_index,10,10);
-
+	max_index = get_max_index(tr.data,p_index,range,range);
+    
 	b = max_index - (int)(t_pre/delta);
 	e = b + npts;
 	for (i=b;i<e;i++)
@@ -119,7 +120,6 @@ int get_max_index(float *data,int p_index,int pre,int post)
 		}
 	}
 	return max_index;
-
 }
 
 void trim(char *str)

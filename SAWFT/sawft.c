@@ -14,20 +14,21 @@ int main(int argc,char *argv[])
 {
 	PARA dt;
 	SacTrace *st;
-	int i,j,k,l,m,n,nsta,npts=900,nloop,nrun,nret,ktau,kave,N,mnam;
+	int i,j,k,l,m,n,nsta,npts=900,p_index,pb,pe,nloop,nrun,nret,ktau,kave,N,mnam;
 	char inf[20] = "theo.txt",*energy = "energy.txt",buf[20];
-	int *dfshift,*abshift,*kappa,u,se,sb,tid;
-	double **data,*s,*tau,*tdf,*tab,*adf,*aab,*amp,*tsta;
-	double delta,tbs,nadf,naab,tsmax,stime,rtime,ds;
+	int *dfshift,*abshift,*kappa,u,se,sb,tid,r,ismax;
+	double **data,*s,*wbc,*tau,*tdf,*tab,*adf,*aab,*amp,*tsta;
+	double delta,tbs,nadf,naab,tsmax,stime,rtime,ds,nfc,smax;
 	double e1,e2,gamma,temp,der,alpha,p,rand;
 	double **obc,**odf,**oab,**nbc,**ndf,**nab,**qq,*ns,**q,*namp,*derr,*ntsta;
 	double *ntau,*dummy,**atsta,**aamp,**aadf,**aaab,**atau,**atdf,**atab,*tstastd;
 	double t1,t2,*ampstd,*adfstd,*aabstd,*taustd,*tdfstd,*tabstd;
 	FILE **ofp,*rfp,*sfp,*efp;
 
-	tbs = -20;
+	tbs = 20;
 	nadf = 3; naab = 3; tsmax = 2;
 	stime = -2.0; rtime = 6.0;
+
 	
 	if (argc < 4 || argc > 7)
 	{
@@ -68,9 +69,6 @@ int main(int argc,char *argv[])
 	amp = (double *)malloc(nsta*sizeof(double));
 	namp = (double *)malloc(nsta*sizeof(double));
 	tsta = (double *)malloc(nsta*sizeof(double));
-	s = (double *)malloc(npts*sizeof(double));
-	ns = (double *)malloc(npts*sizeof(double));
-	dummy = (double *)malloc(npts*sizeof(double));
 	obc = (double **)malloc(nsta*sizeof(double *));
 	odf = (double **)malloc(nsta*sizeof(double *));
 	oab = (double **)malloc(nsta*sizeof(double *));
@@ -111,14 +109,23 @@ int main(int argc,char *argv[])
 		atab[i] = (double *)malloc(nrun*sizeof(double));
 		
 	}
-
+    
 	for (i=0;i<nsta;i++){
 		st[i] = read_sac_tr(dt.fname[i]);
-		if (i==0)
+		if (i==0){
 			delta = st[i].hd.delta;
+			npts = (int)(45.0/delta);
+			pb = (int)((tbs - 2.0)/delta);
+	        pe = (int)((tbs + 2.0)/delta);
+	        wbc = (double *)malloc((pe-pb)*sizeof(double));
+		}
 		data[i] = (double *)malloc(npts*sizeof(double));
-		cut_data(st[i],'1',20,900,data[i]);
-		normalize(data[i],npts);
+		/* cut data and normalize it by amplitude of PKPbc */
+		cut_data(st[i],'1',tbs,npts,data[i]);
+        slice(data[i],pb,pe,wbc);
+        nfc = max_abs(wbc,pe - pb);
+		normalize(data[i],npts,nfc);
+		/* ----------------------------------------------- */
 		dfshift[i] = (int)((dt.t_df[i] - dt.t_bc[i])/delta);
 		abshift[i] = (int)((dt.t_ab[i] - dt.t_bc[i])/delta);
 		obc[i] = (double *)malloc(npts*sizeof(double));
@@ -130,9 +137,13 @@ int main(int argc,char *argv[])
 		qq[i] = (double *)malloc(npts*sizeof(double));
 		q[i] = (double *)malloc(npts*sizeof(double));
 	}
+
+	s = (double *)malloc(npts*sizeof(double));
+	ns = (double *)malloc(npts*sizeof(double));
+	dummy = (double *)malloc(npts*sizeof(double));
 	/*Set length and maximum perturbation of reference wave*/ 	
-	//smax = 0;
-	/*for (i=0;i<nsta;i++)
+	/*smax = 0;
+	for (i=0;i<nsta;i++)
 	{
 		for (j=0;j<npts;j++)
 			if (fabs(data[i][j]) > smax)
@@ -141,10 +152,14 @@ int main(int argc,char *argv[])
 				ismax = i;
 			}
 	}
+	for (i=0;i<nsta;i++)
+	    normalize(data[i],npts,smax);
 	*/
+	//printf("%s %.10f\n",st[ismax].hd.kstnm,smax);
+	//exit(0);
 	ds = 0.01;
-	sb = (int)((stime-tbs)/delta);
-	se = (int)((stime-tbs+rtime)/delta);
+	sb = (int)((stime+tbs)/delta);
+	se = (int)((stime+tbs+rtime)/delta);
 	/*-----------------------------------------------------*/
 	
 	/*Define SA parameter*/
@@ -190,7 +205,6 @@ int main(int argc,char *argv[])
 					for (m=0;m<npts;m++)
 						qq[l][m] = obc[l][m] + odf[l][m] + oab[l][m];
 				}
-
 				for (l=sb;l<se;l++)
 				{
 					u = l-sb;
@@ -236,7 +250,7 @@ int main(int argc,char *argv[])
 				//	s[l] = 0;
 				//printf("node 1\n");
 			    /*--------------Perturbate the amplitude parameters-------------*/
-			#pragma omp parallel default(shared) private(l,m,p,alpha,tid)
+			#pragma omp parallel default(shared) private(l,m,p,alpha,tid,nadf)
 			{
 				#pragma omp for
 				for (l=0;l<nsta;l++)
@@ -269,8 +283,14 @@ int main(int argc,char *argv[])
 								obc[l][m] = nbc[l][m];
 						}
 					//}
-					/*--------------------------- DF -------------------------------*/ 	
-					namp[l] = get_random()*nadf;
+					/*--------------------------- DF -------------------------------*/
+					if (st[l].hd.gcarc < 152.0)
+					    nadf = 1;
+					else
+					    nadf = 3.0;
+					
+					//namp[l] = get_random()*nadf;
+					namp[l] = 0.3 + get_random()*(nadf - 0.3);
 					mkdf(npts,dfshift[l],delta,s,namp[l],tdf[l],tsta[l],ndf[l]);
 
 					derr[l] = 0;
@@ -302,8 +322,8 @@ int main(int argc,char *argv[])
 					if (derr[l] <0)
 					{
 						aab[l] = namp[l];
-						for (m=0;m<npts;m++)
-							oab[l][m] = nab[l][m];
+						//for (m=0;m<npts;m++)
+						//	oab[l][m] = nab[l][m];
 					}
 				}
 				//printf("node 2\n");
@@ -319,6 +339,7 @@ int main(int argc,char *argv[])
 						qq[l][m] = obc[l][m] + odf[l][m] + oab[l][m];
 					
 					ntsta[l] = tsmax*get_random();
+					//ntsta[l] = (tsmax-0.2)*get_random() + 0.2;
 					mkdf(npts,dfshift[l],delta,s,adf[l],tdf[l],ntsta[l],ndf[l]);
 
 					derr[l] = 0;
@@ -437,7 +458,8 @@ int main(int argc,char *argv[])
 					do
 					{
 						rand = get_random();
-						kappa[l] = (int)(2*(rand - 0.5)/delta);
+						//kappa[l] = (int)(2*(rand - 0.5)/delta); 
+						kappa[l] = (int)(((-4*rand)-1)/delta);  /*for very fast df*/
 						ntau[l] =  kappa[l]*delta;
 						mnam += 1;
 					}while(dfshift[l]+ kappa[l] > tau[l]/delta && mnam < 500);
@@ -500,8 +522,8 @@ int main(int argc,char *argv[])
 						if (alpha < p)
 						{
 							tab[l] = ntau[l];
-							for (m=0;m<npts;m++)
-								oab[l][m] = nab[l][m];
+							//for (m=0;m<npts;m++)
+							//	oab[l][m] = nab[l][m];
 						}
 					}
 				
@@ -546,8 +568,9 @@ int main(int argc,char *argv[])
 	if ((rfp=fopen("result.txt","w+"))==NULL)
 		printf("Fail to write result to file %s","result.txt");
 	for (i=0;i<nsta;i++)
-		fprintf(rfp,"%8.3f %.3f %.3f %.3f %5.3f %5.3f %5.3f %5.3f\n",\
-				dt.dis[i],tdf[i],tau[i],tab[i],tsta[i],tstastd[i],adf[i],adfstd[i]);
+		fprintf(rfp,"%8.3f %.3f %.3f %.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f %6.3f\n",\
+				dt.dis[i],tdf[i],tau[i],tab[i],tsta[i],tstastd[i],adf[i],adfstd[i],\
+				amp[i],ampstd[i],aab[i],aabstd[i]);
 	if ((sfp=fopen("refwave.txt","w+"))==NULL)
 		printf("Fail to write result to file %s","refwave.txt");
 	for (i=0;i<npts;i++)

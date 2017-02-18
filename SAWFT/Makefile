@@ -1,9 +1,4 @@
-OS := $(shell uname)
-ifeq ($(OS),Darwin)
-	CC=gcc-5
-else
-	CC=gcc
-endif
+CC=gcc
 LIB := -lm  -lgsl -lgslcblas
 CFLAGS := -O3 -Wall
 OMP := true
