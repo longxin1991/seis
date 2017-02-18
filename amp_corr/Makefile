@@ -1,10 +1,5 @@
 FC=gfortran
-OS=$(shell uname)
-ifeq ($(OS),Darwin)
-	CC=gcc-5
-else
-	CC=gcc
-endif
+CC=gcc
 LAPACK := ~/lapack-3.5.0
 INCLUDE := $(LAPACK)/lapacke/include/
 LIBS = -lm -lgfortran
@@ -16,11 +11,16 @@ FOBJ = ttimesapi.o libtau.o libsun.o
 all:amp_corr
 
 rtf.o:rtf.c
-	${CC} -c $^ -I ${INCLUDE} ${LIBS}
+	gcc -c $^ -I ${INCLUDE} ${LIBS}
 
 amp_corr: ${COBJ} ${FOBJ}
-	${CC} $^ ${STATIC_LIB} ${LIBS} -I ${INCLUDE}  -o $@ 
+	gcc $^ ${STATIC_LIB} ${LIBS} -I ${INCLUDE}  -o $@ 
 	
+test:test.o ${FOBJ} 
+	${FC} $^ ${CFLAGS} -o $@
+test.o:test.c
+	${CC} -c $^
+
 %o.:%.f
 	${FC} -c 
 

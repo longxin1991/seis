@@ -1,6 +1,7 @@
 #include "numc.h"
 #include "rtf.h"
 #include "dtype.h"
+#include <stdio.h>
 
 float geom(float evdp,float v_s,float v_r,float p,float d,float d2t)
 {
@@ -128,7 +129,6 @@ float cal_radp(CMT mt,float theta,float az)
 float corr_rp(CMT mt,float evdp,float v_s,float p1,float p2,float az)
 {
 	float i1,i2,a1,a2;
-
 	p1 = p1*DEG2RAD;
 	p2 = p2*DEG2RAD;
 	i1 = asinf(v_s*p1/(Re-evdp));
@@ -136,5 +136,6 @@ float corr_rp(CMT mt,float evdp,float v_s,float p1,float p2,float az)
 
 	a1 = cal_radp(mt,i1,az);
 	a2 = cal_radp(mt,i2,az);
+
 	return a1/a2;
 }

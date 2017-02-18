@@ -28,6 +28,8 @@ typedef struct model{
 	float *Vs;
 	float *h;
 	float *rho;
+	float *Qp;
+	float *Qs;
 	int n;
 }Model;
 

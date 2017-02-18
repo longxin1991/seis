@@ -1,3 +1,14 @@
+/**\file amp_corr.c 
+ * \brief amp_corr calculate amplitude correction for PKPdf
+ * due to geometrical spreading, radiation pattern and transmission at
+ * discontinuities.
+ *
+ *
+ * Here is the detail description.
+ * \author longxin
+ * \date 6 Dec 2016
+ * 
+*/
 #include "corr.h"
 #include "layer.h"
 #include "numc.h"
@@ -22,8 +33,8 @@ int main(int argc,char *argv[])
 
 	if (argc < 4)
 	{
-		printf("usage:%s phase1 phase2 < stdin\n\n",argv[0]);
-		printf("deg: Epicentral distance\n");
+		printf("usage:%s deg phase1 phase2 < stdin\n\n",argv[0]);
+		printf("deg: distance from epicenter\n");
 		printf("phase1: PKPdf\n");
 		printf("phase2: PKPbc or PKPab\n");
 		printf(" stdin: evdp mrr mtt mff mrt mrf mtf\n");
@@ -43,6 +54,8 @@ int main(int argc,char *argv[])
     mod.Vs = (float *)malloc(MAXLAYER*sizeof(float));
 	mod.h = (float *)malloc(MAXLAYER*sizeof(float));
 	mod.rho = (float *)malloc(MAXLAYER*sizeof(float));
+	mod.Qp = (float *)malloc(MAXLAYER*sizeof(float));
+	mod.Qs = (float *)malloc(MAXLAYER*sizeof(float));
 	read_mod("prem.nd",&mod);
 
 	read_mt(&mt,&evdp);

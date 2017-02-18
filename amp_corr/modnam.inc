@@ -1,1 +1,1 @@
-      data modnam/'/Users/longxin/prog/ttimes/lib/ak135'/
+      data modnam/'/home/longxin/Programs/ttimes/lib/fakeprem'/
