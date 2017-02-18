@@ -8,9 +8,9 @@ LIB := -lm
 OBJ := io.o numc.o
 CFLAGS := -O3
 
-all:rtf
+all:crtf
 
-rtf:%:%.o $(OBJ)
+crtf:%:%.o $(OBJ)
 	gfortran $^ $(LAPACK)/liblapacke.a $(LAPACK)/liblapack.a $(LAPACK)/librefblas.a -o $@
 
 #%o.:%.c
@@ -19,4 +19,4 @@ rtf:%:%.o $(OBJ)
 	$(CC) -c $(CFLAGS) -I $(INCLUDE) -o $@ $<
 
 clean:
-	rm rtf *.o
+	rm crtf *.o

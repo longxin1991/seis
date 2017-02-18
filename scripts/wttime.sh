@@ -3,7 +3,7 @@
 phase=$1
 marker=$2
 
-for sacfile in *
+for sacfile in *.SAC
 do
     phase=$1
     deg=`saclst gcarc f $sacfile|awk '{print $2}'`

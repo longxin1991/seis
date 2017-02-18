@@ -1,5 +1,6 @@
 #define COL_MAJOR 1
 #define ROW_MAJOR 0
+#include <complex.h>
 /*define property structure of the interface*/
 typedef struct interface{
 	float a1;	/*P wave velocity of upper layer.*/
@@ -11,8 +12,8 @@ typedef struct interface{
 }ITF;
 
 typedef struct rtcoeff_p{
-	float p1p2;
-	float p1s1;
-	float p1p1;
-	float p1s2;
+	float complex p1p2;
+	float complex p1s1;
+	float complex p1p1;
+	float complex p1s2;
 }RTF_P;

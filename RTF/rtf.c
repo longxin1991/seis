@@ -121,11 +121,11 @@ int main(int argc,char *argv[])
 
 	for (i=0;i<100;i++)
 	{
-		status = s2l(intf[0],theta[i],&RT);
-		//status = l2s(intf[1],theta[i],&RT);
+		//status = s2l(intf[0],theta[i],&RT);
+		status = l2s(intf[1],theta[i],&RT);
 		if (status == 0)
-			//printf("%f %f %f %f\n",theta[i],RT.p1s2,RT.p1p1,RT.p1p2);
-			printf("%f %f %f %f\n",theta[i],RT.p1s1,RT.p1p1,RT.p1p2);
+			printf("%f %f %f %f\n",theta[i],RT.p1s2,RT.p1p1,RT.p1p2);
+			//printf("%f %f %f %f\n",theta[i],RT.p1s1,RT.p1p1,RT.p1p2);
 	}
 	return 0;
 }
